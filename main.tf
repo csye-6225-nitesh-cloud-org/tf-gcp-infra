@@ -9,5 +9,5 @@ resource "google_compute_subnetwork" "subnet1" {
   name          = "subnet1"
   region        = var.region
   network       = google_compute_network.vpc_network.id
-  ip_cidr_range = "172.168.0.0/24"
+  ip_cidr_range = subnet_cidr
 }
