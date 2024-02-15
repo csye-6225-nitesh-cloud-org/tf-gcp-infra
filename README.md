@@ -1,27 +1,91 @@
-# tf-gcp-infra
+# Terraform and GCP Infrastructure Guide
 
-## Assignment 3 - teraform script to create VPC with custom subnet
+## Assignment 3 - Terraform Script to Create VPC with Custom Subnet
 
-## Teraform Userfull Commands
+This guide provides an overview and useful commands for using Terraform to manage infrastructure in Google Cloud Platform (GCP).
 
-```
-terraform init
-```
-```
-terraform validate
-```
-```
- terraform plan
-```
-```
- terraform apply
-```
+### Terraform Useful Commands
 
-## Need .tfvar with below variables
-```
+To manage your Terraform infrastructure, use the following commands:
+
+- Initialize Terraform directory:
+  ```
+  terraform init
+  ```
+
+- Validate the Terraform files:
+  ```
+  terraform validate
+  ```
+
+- Create an execution plan:
+  ```
+  terraform plan
+  ```
+
+- Apply the changes required to reach the desired state of the configuration:
+  ```
+  terraform apply
+  ```
+
+### Required `.tfvar` Variables
+
+For the Terraform scripts to work, ensure you have a `.tfvar` file with the following variables:
+
+```hcl
 project_name = "project-name"
 region = "region"
-cidr-webapp= "ip/cidr"
+cidr-webapp = "ip/cidr"
 cidr-db = "ip/cidr"
 Env = "environment"
 ```
+
+### Using Workspace for Isolated States
+
+Workspaces allow you to manage different states for your infrastructure, useful for managing different environments (e.g., development, staging, production).
+
+1. **Create a New Workspace:**
+   ```shell
+   terraform workspace new <workspace_name>
+   ```
+
+2. **Apply Configuration for a Workspace:**
+   ```shell
+   terraform apply -var-file="<filename>"
+   ```
+
+3. **Workspace Management Commands:**
+    - **List Workspaces:**
+      ```shell
+      terraform workspace list
+      ```
+    - **Switch Workspace:**
+      ```shell
+      terraform workspace select <workspace_name>
+      ```
+    - **Delete Workspace:**
+      **Note:** This will delete the state files. Make sure to destroy resources before deleting the workspace.
+      ```shell
+      terraform workspace delete -force <workspace_name>
+      ```
+
+## Enabled Google Cloud Platform (GCP) APIs
+
+Ensure the following GCP APIs are enabled for your project:
+
+- Compute Engine API
+- BigQuery API
+- BigQuery Migration API
+- BigQuery Storage API
+- Cloud Datastore API
+- Cloud Logging API
+- Cloud Monitoring API
+- Cloud OS Login API
+- Cloud SQL
+- Cloud Storage
+- Cloud Storage API
+- Cloud Trace API
+- Google Cloud APIs
+- Google Cloud Storage JSON API
+- Service Management API
+- Service Usage API
