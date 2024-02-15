@@ -1,7 +1,6 @@
 variable "project_name" {
   type        = string
   description = "project Name"
-  default     = "csye6225-webapp"
 }
 variable "Env" {
   type        = string
