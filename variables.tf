@@ -3,12 +3,16 @@ variable "project_name" {
   description = "project Name"
   default     = "csye6225-webapp"
 }
+variable "Env" {
+  type        = string
+}
 variable "region" {
   type        = string
   description = "region for infra"
-  default     = "us-east1"
 }
-variable "subnet_cidr" {
+variable "cidr-webapp" {
   description = "The CIDR range for the subnet"
-  default     = "172.168.0.0/24"
+}
+variable "cidr-db" {
+  description = "The CIDR range for the subnet"
 }
