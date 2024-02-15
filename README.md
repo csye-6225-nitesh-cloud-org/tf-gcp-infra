@@ -16,3 +16,12 @@ terraform validate
 ```
  terraform apply
 ```
+
+## Need .tfvar with below variables
+```
+project_name = "project-name"
+region = "region"
+cidr-webapp= "ip/cidr"
+cidr-db = "ip/cidr"
+Env = "environment"
+```
