@@ -33,11 +33,13 @@ To manage your Terraform infrastructure, use the following commands:
 For the Terraform scripts to work, ensure you have a `.tfvar` file with the following variables:
 
 ```hcl
+Env = "environment"
 project_name = "project-name"
 region = "region"
 cidr-webapp = "ip/cidr"
 cidr-db = "ip/cidr"
-Env = "environment"
+private-subnet-name = "db"
+public-subnet-name= "webapp"
 ```
 
 ### Using Workspace for Isolated States

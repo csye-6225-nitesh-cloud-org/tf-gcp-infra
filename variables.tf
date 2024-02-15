@@ -15,3 +15,9 @@ variable "cidr-webapp" {
 variable "cidr-db" {
   description = "The CIDR range for the subnet"
 }
+variable "private-subnet-name" {
+  description = "private Subnet name"
+}
+variable "public-subnet-name" {
+  description = "public Subnet name"
+}
