@@ -49,3 +49,26 @@ resource "google_compute_firewall" "deny-ssh" {
   source_ranges = var.firewall-deny-source
   target_tags   = var.target-tag
 }
+
+resource "google_compute_instance" "webapp-instance" {
+  name         = var.instance-name
+  machine_type = var.machine_type
+  zone         = var.zone
+  tags         = var.tags
+  boot_disk {
+    auto_delete = true
+    initialize_params {
+      size  = var.disk-size
+      type  = var.disk_type
+      image = "${var.Env}-${var.image-family}"
+
+    }
+  }
+  network_interface {
+    network    = google_compute_network.vpc_network.self_link
+    subnetwork = google_compute_subnetwork.webapp-subnet.self_link
+    access_config {
+      network_tier = var.network_tier
+    }
+  }
+}

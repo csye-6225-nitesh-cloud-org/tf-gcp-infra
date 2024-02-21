@@ -85,10 +85,37 @@ variable "firewall-deny-source" {
   default = ["0.0.0.0/0"]
 }
 
-variable "target-tag"{
-  type    = list(string)
+variable "target-tag" {
+  type = list(string)
 }
- variable "web-route-next-hop-gateway" {
-  type = string
+variable "web-route-next-hop-gateway" {
+  type    = string
   default = "default-internet-gateway"
- }
+}
+
+variable "instance-name" {
+  type        = string
+  description = "Instance name"
+}
+variable "machine_type" {
+  type = string
+}
+
+variable "zone" {
+  type = string
+
+}
+variable "image-family" {
+  type = string
+}
+
+variable "disk-size" {
+  type = string
+}
+variable "disk_type" {
+  type = string
+}
+
+variable "network_tier" {
+  type = string
+}
