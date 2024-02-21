@@ -119,3 +119,6 @@ variable "disk_type" {
 variable "network_tier" {
   type = string
 }
+variable "tags" {
+  type = list(string)
+}
