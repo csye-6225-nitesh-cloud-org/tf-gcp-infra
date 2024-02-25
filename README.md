@@ -76,6 +76,7 @@ Workspaces allow you to manage different states for your infrastructure, useful 
 Ensure the following GCP APIs are enabled for your project:
 
 - Compute Engine API
+- Service Networking API
 - BigQuery API
 - BigQuery Migration API
 - BigQuery Storage API
