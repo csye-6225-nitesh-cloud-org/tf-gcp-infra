@@ -49,6 +49,59 @@ resource "google_compute_firewall" "deny-ssh" {
   source_ranges = var.firewall-deny-source
   target_tags   = var.target-tag
 }
+resource "google_compute_global_address" "private_ip_address" {
+  name          = "private-ip-address"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.vpc_network.self_link
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.vpc_network.self_link
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+} #Issue with destroying VPC NETWORK PEERING https://github.com/hashicorp/terraform-provider-google/issues/16275 Set deletion_policy=ABANDON & clean manually
+
+resource "random_id" "db_name_suffix" {
+  byte_length = 4
+}
+resource "google_sql_database_instance" "webapp_db" {
+  name                = "${var.sql_instance_name}-${random_id.db_name_suffix.hex}"
+  database_version    = var.db_version
+  deletion_protection = false
+  settings {
+    tier              = var.db_tier
+    availability_type = var.db_aval_type
+    disk_type         = var.db_disk_type
+    disk_size         = var.db_size
+    ip_configuration {
+      ipv4_enabled    = false
+      private_network = google_compute_network.vpc_network.self_link
+    }
+  }
+  depends_on = [
+    google_service_networking_connection.private_vpc_connection
+  ]
+}
+
+resource "google_sql_database" "database_name" {
+  name     = var.db_name
+  instance = google_sql_database_instance.webapp_db.name
+}
+
+resource "random_password" "db_password" {
+  length           = 16
+  special          = true
+  override_special = "!#%&*()-_=+<>:?"
+}
+
+resource "google_sql_user" "webapp_user" {
+  name     = var.db_user
+  instance = google_sql_database_instance.webapp_db.name
+  password = random_password.db_password.result
+}
+
 
 resource "google_compute_instance" "webapp-instance" {
   name         = var.instance-name
@@ -71,4 +124,10 @@ resource "google_compute_instance" "webapp-instance" {
       network_tier = var.network_tier
     }
   }
-}
+  metadata_startup_script = templatefile("startup-script.sh.tpl", {
+    db_user     = var.db_user
+    db_password = random_password.db_password.result
+    db_host     = google_sql_database_instance.webapp_db.private_ip_address
+    db_name     = var.db_name
+  })
+}   

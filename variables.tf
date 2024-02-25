@@ -122,3 +122,37 @@ variable "network_tier" {
 variable "tags" {
   type = list(string)
 }
+
+variable "db_name" {
+  type = string
+
+}
+
+variable "db_user" {
+  type = string
+
+}
+
+variable "sql_instance_name" {
+  type = string
+}
+
+variable "db_version" {
+  type = string
+}
+
+variable "db_tier" {
+  type = string
+}
+
+variable "db_aval_type" {
+  type = string
+}
+
+variable "db_disk_type" {
+  type = string
+}
+
+variable "db_size" {
+  type = string
+}
