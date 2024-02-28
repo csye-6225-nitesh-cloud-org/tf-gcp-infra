@@ -156,3 +156,13 @@ variable "db_disk_type" {
 variable "db_size" {
   type = string
 }
+
+variable "global_addr_type" {
+  type = string
+}
+variable "global_addr_purpose" {
+  type = string
+}
+variable "global_addr_name" {
+  type = string
+}

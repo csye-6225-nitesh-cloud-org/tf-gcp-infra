@@ -50,9 +50,9 @@ resource "google_compute_firewall" "deny-ssh" {
   target_tags   = var.target-tag
 }
 resource "google_compute_global_address" "private_ip_address" {
-  name          = "private-ip-address"
-  purpose       = "VPC_PEERING"
-  address_type  = "INTERNAL"
+  name          = var.global_addr_name
+  purpose       = var.global_addr_purpose
+  address_type  = var.global_addr_type
   prefix_length = 16
   network       = google_compute_network.vpc_network.self_link
 }
