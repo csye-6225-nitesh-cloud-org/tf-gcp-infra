@@ -1,10 +1,10 @@
-# Terraform and GCP Infrastructure Guide
+# Terraform and GCP Infrastructure Guide 📚
 
-## Assignment 3 - Terraform Script to Create VPC with Custom Subnet
+## Terraform Script to Provision Infrastructure 🚀
 
 This guide provides an overview and useful commands for using Terraform to manage infrastructure in Google Cloud Platform (GCP).
 
-### Terraform Useful Commands
+### Terraform Useful Commands 🛠️
 
 To manage your Terraform infrastructure, use the following commands:
 
@@ -28,21 +28,13 @@ To manage your Terraform infrastructure, use the following commands:
   terraform apply
   ```
 
-### Required `.tfvar` Variables
+### Required `.tfvar` Variables 📝
 
-For the Terraform scripts to work, ensure you have a `.tfvar` file with the following variables:
+For the Terraform scripts to work, ensure you have a `.tfvar` file.
 
-```hcl
-Env = "environment"
-project_name = "project-name"
-region = "region"
-cidr-webapp = "ip/cidr"
-cidr-db = "ip/cidr"
-private-subnet-name = "db"
-public-subnet-name= "webapp"
-```
+For reference, use `example.tfvars` to create your own `tfvars` file.
 
-### Using Workspace for Isolated States
+### Using Workspace for Isolated States 🌐
 
 Workspaces allow you to manage different states for your infrastructure, useful for managing different environments (e.g., development, staging, production).
 
@@ -71,7 +63,7 @@ Workspaces allow you to manage different states for your infrastructure, useful 
       terraform workspace delete -force <workspace_name>
       ```
 
-## Enabled Google Cloud Platform (GCP) APIs
+## Enabled Google Cloud Platform (GCP) APIs 🔌
 
 Ensure the following GCP APIs are enabled for your project:
 
@@ -92,3 +84,5 @@ Ensure the following GCP APIs are enabled for your project:
 - Google Cloud Storage JSON API
 - Service Management API
 - Service Usage API
+
+I corrected the minor typo "Cloud Monitoring APIa" to "Cloud Monitoring API" and added appropriate emojis to enhance the readability of the guide.
