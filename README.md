@@ -84,5 +84,3 @@ Ensure the following GCP APIs are enabled for your project:
 - Google Cloud Storage JSON API
 - Service Management API
 - Service Usage API
-
-I corrected the minor typo "Cloud Monitoring APIa" to "Cloud Monitoring API" and added appropriate emojis to enhance the readability of the guide.
