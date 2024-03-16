@@ -130,4 +130,17 @@ resource "google_compute_instance" "webapp-instance" {
     db_host     = google_sql_database_instance.webapp_db.private_ip_address
     db_name     = var.db_name
   })
-}   
+}
+
+data "google_dns_managed_zone" "dns_zone" {
+  name = var.dns_zone_name
+}
+resource "google_dns_record_set" "A" {
+  name         = data.google_dns_managed_zone.dns_zone.dns_name
+  managed_zone = data.google_dns_managed_zone.dns_zone.name
+  type         = var.dns_record_type
+  ttl          = var.dns_ttl
+  rrdatas = [
+    google_compute_instance.webapp-instance.network_interface[0].access_config[0].nat_ip
+  ]
+}
