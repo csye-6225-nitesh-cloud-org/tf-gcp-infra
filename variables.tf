@@ -166,3 +166,15 @@ variable "global_addr_purpose" {
 variable "global_addr_name" {
   type = string
 }
+
+variable "dns_zone_name" {
+  type = string
+}
+
+variable "dns_record_type" {
+  type = string
+}
+
+variable "dns_ttl" {
+  type = number
+}
