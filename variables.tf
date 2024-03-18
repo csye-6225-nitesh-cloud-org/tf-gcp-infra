@@ -178,3 +178,17 @@ variable "dns_record_type" {
 variable "dns_ttl" {
   type = number
 }
+
+variable "service_account_id" {
+  type = string
+}
+
+variable "logging_role" {
+  type = string
+}
+variable "monitoring_role" {
+  type = string
+}
+variable "service_account_scopes" {
+  type = list(string)
+}

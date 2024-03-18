@@ -102,7 +102,14 @@ resource "google_sql_user" "webapp_user" {
   password = random_password.db_password.result
 }
 
-
+resource "google_service_account" "webapp_service_account" {
+  account_id   = var.service_account_id
+  display_name = "WebApp Service Account"
+}
+data "google_compute_image" "webapp_image" {
+  family  = "${var.Env}-${var.image-family}"
+  project = var.project_name
+}
 resource "google_compute_instance" "webapp-instance" {
   name         = var.instance-name
   machine_type = var.machine_type
@@ -113,7 +120,7 @@ resource "google_compute_instance" "webapp-instance" {
     initialize_params {
       size  = var.disk-size
       type  = var.disk_type
-      image = "${var.Env}-${var.image-family}"
+      image = data.google_compute_image.webapp_image.self_link
 
     }
   }
@@ -130,6 +137,27 @@ resource "google_compute_instance" "webapp-instance" {
     db_host     = google_sql_database_instance.webapp_db.private_ip_address
     db_name     = var.db_name
   })
+  service_account {
+    email  = google_service_account.webapp_service_account.email
+    scopes = var.service_account_scopes
+  }
+}
+resource "google_project_iam_binding" "logging_admin" {
+  project = var.project_name
+  role    = var.logging_role
+  members = [
+    "serviceAccount:${google_service_account.webapp_service_account.email}"
+  ]
+  depends_on = [google_service_account.webapp_service_account]
+}
+
+resource "google_project_iam_binding" "monitoring_writer" {
+  project = var.project_name
+  role    = var.monitoring_role
+  members = [
+    "serviceAccount:${google_service_account.webapp_service_account.email}"
+  ]
+  depends_on = [google_service_account.webapp_service_account]
 }
 
 data "google_dns_managed_zone" "dns_zone" {
