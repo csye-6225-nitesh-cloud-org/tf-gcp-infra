@@ -41,3 +41,7 @@ global_addr_type           = "global_address_typr"
 dns_zone_name              = "your_dns_zone_name"
 dns_record_type            = "record_type_Like_A"
 dns_ttl                    = ttl_value
+service_account_id         = "account_name"
+logging_role               = "roles/logging.logWriter"
+monitoring_role            = "roles/monitoring.metricWriter"
+service_account_scopes     = ["list_of_scopes"]
