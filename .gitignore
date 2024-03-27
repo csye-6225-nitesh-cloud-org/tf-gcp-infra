@@ -41,3 +41,9 @@ terraform.rc
 .vscode/
 .idea/
 *.iml
+
+# Archives and compression
+*.tgz
+*.zip
+*.tar.gz
+*.tar

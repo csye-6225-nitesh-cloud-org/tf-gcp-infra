@@ -132,15 +132,20 @@ resource "google_compute_instance" "webapp-instance" {
     }
   }
   metadata_startup_script = templatefile("startup-script.sh.tpl", {
-    db_user     = var.db_user
-    db_password = random_password.db_password.result
-    db_host     = google_sql_database_instance.webapp_db.private_ip_address
-    db_name     = var.db_name
+    db_user        = var.db_user
+    db_password    = random_password.db_password.result
+    db_host        = google_sql_database_instance.webapp_db.private_ip_address
+    db_name        = var.db_name
+    PUB_SUB_TOPIC  = var.PUB_SUB_TOPIC
+    GCP_PROJECT_ID = var.project_name
+    PORT_WEBAPP    = var.ApplicationPort
+
   })
   service_account {
     email  = google_service_account.webapp_service_account.email
     scopes = var.service_account_scopes
   }
+  depends_on = [google_service_account.webapp_service_account]
 }
 resource "google_project_iam_binding" "logging_admin" {
   project = var.project_name
@@ -160,6 +165,14 @@ resource "google_project_iam_binding" "monitoring_writer" {
   depends_on = [google_service_account.webapp_service_account]
 }
 
+resource "google_project_iam_binding" "instance_pubsub_publisher" {
+  project = var.project_name
+  role    = var.instance_sa_publisher_role
+  members = [
+    "serviceAccount:${google_service_account.webapp_service_account.email}"
+  ]
+  depends_on = [google_service_account.webapp_service_account]
+}
 data "google_dns_managed_zone" "dns_zone" {
   name = var.dns_zone_name
 }
@@ -172,3 +185,144 @@ resource "google_dns_record_set" "A" {
     google_compute_instance.webapp-instance.network_interface[0].access_config[0].nat_ip
   ]
 }
+
+resource "google_service_account" "cloud_function_sa" {
+  account_id   = var.cf2_service_account_id
+  display_name = var.cf2_service_account_name
+}
+
+resource "google_project_iam_binding" "monitoring_writer_Cf_sa" {
+  project = var.project_name
+  role    = var.monitoring_role
+  members = [
+    "serviceAccount:${google_service_account.cloud_function_sa.email}"
+  ]
+  depends_on = [google_service_account.cloud_function_sa]
+}
+resource "google_project_iam_binding" "pubsub_subscriber" {
+  project = var.project_name
+  role    = var.cf2_sa_subscriber_role
+  members = [
+    "serviceAccount:${google_service_account.cloud_function_sa.email}"
+  ]
+  depends_on = [google_service_account.cloud_function_sa]
+}
+
+resource "google_project_iam_binding" "log_writer" {
+  project = var.project_name
+  role    = var.cf2_sa_sql_logWriter
+  members = [
+    "serviceAccount:${google_service_account.cloud_function_sa.email}"
+  ]
+  depends_on = [google_service_account.cloud_function_sa]
+}
+
+resource "google_project_iam_binding" "cloudsql_client" {
+  project = var.project_name
+  role    = var.cf2_sa_sql_client_role
+  members = [
+    "serviceAccount:${google_service_account.cloud_function_sa.email}"
+  ]
+  depends_on = [google_service_account.cloud_function_sa]
+}
+
+resource "random_id" "bucket_prefix" {
+  byte_length = 8
+}
+resource "google_pubsub_topic" "verify_email" {
+  name                       = var.PUB_SUB_TOPIC
+  message_retention_duration = var.pubsub_message_retention_duration
+}
+
+resource "google_pubsub_subscription" "verify_email_subscription" {
+  name                       = var.subscription_name
+  topic                      = google_pubsub_topic.verify_email.id
+  message_retention_duration = var.sub_message_retention_duration
+  ack_deadline_seconds       = var.subscription_ack_deadline
+  retry_policy {
+    minimum_backoff = var.sub_minimum_backoff
+    maximum_backoff = var.sub_maximum_backoff
+  }
+  push_config {
+    push_endpoint = google_cloudfunctions2_function.verify_email_function.url
+  }
+}
+resource "google_storage_bucket" "function_source_bucket" {
+  name          = "${random_id.bucket_prefix.hex}-cloud-functions"
+  location      = var.storage_bucket_location
+  force_destroy = var.storage_bucket_force_destroy
+}
+
+resource "google_storage_bucket_object" "function_source" {
+  name   = var.bucket_objet_name
+  bucket = google_storage_bucket.function_source_bucket.name
+  source = "${path.module}/${var.bucket_objet_source_zip}"
+}
+
+resource "google_vpc_access_connector" "connector" {
+  name          = var.vpc_connector_name
+  ip_cidr_range = var.vpc_connector_ip_range
+  network       = google_compute_network.vpc_network.self_link
+  region        = var.region
+}
+
+data "google_project" "current_project" {
+  project_id = var.project_name
+}
+resource "google_project_iam_binding" "pubsub_service_account_token_creator" {
+  project = var.project_name
+  role    = var.pubsub_sa_token_creator_role
+
+  members = [
+    "serviceAccount:service-${data.google_project.current_project.number}@gcp-sa-pubsub.iam.gserviceaccount.com",
+  ]
+}
+resource "google_cloudfunctions2_function" "verify_email_function" {
+  name        = var.cf2_name
+  location    = var.region
+  description = var.cf2_func_description
+  build_config {
+    runtime     = var.cf2_runtime
+    entry_point = var.cf2_entry_point
+    source {
+      storage_source {
+        bucket = google_storage_bucket.function_source_bucket.name
+        object = google_storage_bucket_object.function_source.name
+      }
+    }
+  }
+  service_config {
+    max_instance_count            = var.cf2_sc_max_instance
+    min_instance_count            = var.cf2_sc_min_instance
+    available_memory              = var.cf2_aval_memory
+    timeout_seconds               = var.cf2_timeout_seconds
+    vpc_connector                 = google_vpc_access_connector.connector.id
+    vpc_connector_egress_settings = var.cf2_vpc_con_egress_settings
+    environment_variables = {
+      MAILGUN_API_KEY = var.MAILGUN_API_KEY
+      DOMAIN          = var.DOMAIN
+      PORT_WEBAPP     = var.ApplicationPort
+      DB_HOST         = google_sql_database_instance.webapp_db.private_ip_address
+      DB_USER         = var.db_user
+      DB_PASSWORD     = random_password.db_password.result
+      DB_NAME         = var.db_name
+    }
+    ingress_settings               = var.cf2_ingress_settings
+    all_traffic_on_latest_revision = var.cf2_all_traffic
+    service_account_email          = google_service_account.cloud_function_sa.email
+  }
+  event_trigger {
+    event_type     = var.cf2_event_type
+    pubsub_topic   = google_pubsub_topic.verify_email.id
+    retry_policy   = var.cf2_retry_policy
+    trigger_region = var.region
+  }
+}
+resource "google_cloudfunctions2_function_iam_member" "invoker" {
+  project        = google_cloudfunctions2_function.verify_email_function.project
+  location       = google_cloudfunctions2_function.verify_email_function.location
+  cloud_function = google_cloudfunctions2_function.verify_email_function.name
+  role           = var.cf2_sa_invoker
+  member         = "serviceAccount:${google_service_account.cloud_function_sa.email}"
+}
+

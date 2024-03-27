@@ -192,3 +192,139 @@ variable "monitoring_role" {
 variable "service_account_scopes" {
   type = list(string)
 }
+
+variable "MAILGUN_API_KEY" {
+  type = string
+}
+
+variable "DOMAIN" {
+  type = string
+}
+variable "PUB_SUB_TOPIC" {
+  type = string
+}
+variable "ApplicationPort" {
+  type        = string
+  description = "Webserver port to create link from cloud function"
+}
+
+variable "cf2_sa_invoker" {
+  type = string
+}
+
+variable "cf2_event_type" {
+  type = string
+}
+
+variable "cf2_retry_policy" {
+  type = string
+}
+
+variable "cf2_ingress_settings" {
+  type = string
+}
+
+variable "cf2_all_traffic" {
+  type = bool
+}
+variable "cf2_vpc_con_egress_settings" {
+  type = string
+}
+
+variable "cf2_sc_max_instance" {
+  type = number
+}
+
+variable "cf2_sc_min_instance" {
+  type = number
+}
+
+variable "cf2_aval_memory" {
+  type = string
+}
+
+variable "cf2_timeout_seconds" {
+  type = number
+}
+variable "cf2_entry_point" {
+  type = string
+}
+variable "cf2_runtime" {
+  type = string
+}
+variable "cf2_name" {
+  type = string
+}
+variable "cf2_func_description" {
+  type = string
+}
+variable "vpc_connector_name" {
+  type = string
+}
+variable "vpc_connector_ip_range" {
+  type = string
+}
+variable "bucket_objet_name" {
+  type = string
+}
+
+variable "bucket_objet_source_zip" {
+  type        = string
+  description = "Zip name , this must be in root directory"
+}
+
+variable "storage_bucket_location" {
+  type = string
+}
+
+variable "storage_bucket_force_destroy" {
+  type = bool
+}
+
+variable "subscription_name" {
+  type = string
+}
+
+variable "sub_message_retention_duration" {
+  type = string
+}
+
+variable "subscription_ack_deadline" {
+  type = number
+}
+variable "sub_minimum_backoff" {
+  type = string
+}
+
+variable "sub_maximum_backoff" {
+  type = string
+}
+
+variable "pubsub_message_retention_duration" {
+  type = string
+}
+
+variable "cf2_sa_sql_client_role" {
+  type = string
+}
+
+variable "cf2_sa_sql_logWriter" {
+  type = string
+}
+
+variable "cf2_sa_subscriber_role" {
+  type = string
+}
+variable "cf2_service_account_name" {
+  type = string
+}
+
+variable "cf2_service_account_id" {
+  type = string
+}
+variable "instance_sa_publisher_role" {
+  type = string
+}
+variable "pubsub_sa_token_creator_role" {
+  type = string
+}
