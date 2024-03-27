@@ -69,6 +69,13 @@ Ensure the following GCP APIs are enabled for your project:
 
 - Compute Engine API
 - Serverless VPC Access API
+- Cloud Build API
+- Cloud Functions API
+- Cloud Logging API
+- Cloud Pub/Sub API
+- Eventarc API
+- Cloud Pub/Sub API
+- Cloud Run Admin API
 - Cloud DNS API
 - Service Networking API
 - BigQuery API
