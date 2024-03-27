@@ -45,3 +45,7 @@ service_account_id         = "account_name"
 logging_role               = "roles/logging.logWriter"
 monitoring_role            = "roles/monitoring.metricWriter"
 service_account_scopes     = ["list_of_scopes"]
+MAILGUN_API_KEY            = "API KEY"
+DOMAIN                     = "YOUR DOMAIN"
+PUB_SUB_TOPIC              = "PUB/SUB TOPIC"
+ApplicationPort            = ApplicationPortNumber 
