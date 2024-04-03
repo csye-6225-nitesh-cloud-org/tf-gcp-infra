@@ -479,3 +479,7 @@ variable "forwarding_rule_load_balancing_scheme" {
 variable "forwarding_rule_port_range" {
   type = string
 }
+
+variable "firewall_deny_all_http_name" {
+  type = string
+}

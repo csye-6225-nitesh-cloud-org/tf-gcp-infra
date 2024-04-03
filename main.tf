@@ -41,7 +41,7 @@ resource "google_compute_firewall" "allow_lb_http" {
 }
 
 resource "google_compute_firewall" "deny_all_http" {
-  name     = "deny-all-http"
+  name     = var.firewall_deny_all_http_name
   network  = google_compute_network.vpc_network.self_link
   project  = var.project_name
   priority = 2000
