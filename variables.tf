@@ -328,3 +328,154 @@ variable "instance_sa_publisher_role" {
 variable "pubsub_sa_token_creator_role" {
   type = string
 }
+
+variable "firewall-deny_all_http-protocol" {
+  type = string
+}
+
+variable "firewall-deny_all_http-port" {
+  type = list(string)
+}
+
+variable "instance_template_name" {
+  type = string
+}
+
+variable "health_check_name" {
+  type = string
+}
+
+variable "health_check_timeout_sec" {
+  type = number
+}
+
+variable "health_check_chk_interval_sec" {
+  type = number
+}
+
+variable "health_check_healthy_threshold" {
+  type = number
+}
+
+variable "health_check_unhealthy_threshold" {
+  type = number
+}
+
+variable "health_check_request_path" {
+  type = string
+}
+
+variable "health_check_port" {
+  type = string
+}
+
+variable "igm_name" {
+  type = string
+}
+
+variable "igm_base_instance_name" {
+  type = string
+}
+
+variable "igm_distribution_policy_zones" {
+  type = list(string)
+}
+
+variable "igm_distribution_policy_target_shape" {
+  type = string
+}
+
+variable "igm_np_name" {
+  type = string
+}
+
+variable "igm_np_port" {
+  type = number
+}
+
+variable "igm_healing_initial_delay_sec" {
+  type = number
+}
+
+variable "igm_version_name" {
+  type = string
+}
+
+variable "autoscaler_name" {
+  type = string
+}
+
+variable "autoscaler_max_replicas" {
+  type = number
+}
+
+variable "autoscaler_min_replicas" {
+  type = number
+}
+
+variable "autoscaler_cooldown_period" {
+  type = number
+}
+variable "autoscaler_cpu_utilization_target" {
+  type = number
+}
+
+variable "ssl_name" {
+  type = string
+}
+
+variable "lb_backend_name" {
+  type = string
+}
+
+variable "lb_backend_scheme" {
+  type = string
+}
+variable "lb_backend_locality_lb_policy" {
+  type = string
+}
+variable "lb_backend_port_name" {
+  type = string
+}
+variable "lb_backend_protocol" {
+  type = string
+}
+variable "lb_backend_session_affinity" {
+  type = string
+}
+variable "lb_backend_timeout_sec" {
+  type = number
+
+}
+variable "lb_backend_balancing_mode" {
+  type = string
+}
+
+variable "lb_backend_capacity_scaler" {
+  type = number
+}
+
+variable "lb_backend_max_utilization" {
+  type = number
+}
+variable "url_map_name" {
+  type = string
+}
+variable "target_https_proxy_name" {
+  type = string
+}
+
+variable "forwarding_rule_name" {
+  type = string
+}
+
+variable "forwarding_rule_ip_protocol" {
+  type = string
+}
+variable "forwarding_rule_load_balancing_scheme" {
+  type = string
+
+}
+variable "forwarding_rule_port_range" {
+  type = string
+}
