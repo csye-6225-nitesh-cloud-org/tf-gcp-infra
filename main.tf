@@ -424,13 +424,11 @@ resource "google_compute_backend_service" "lb_backend" {
 }
 resource "google_compute_url_map" "webapp_lb_url_map" {
   name = var.url_map_name
-  # region          =  var.region
   default_service = google_compute_backend_service.lb_backend.id
 }
 
 resource "google_compute_target_https_proxy" "webapp_target_proxy" {
   name = var.target_https_proxy_name
-  # region           =  var.region
   url_map          = google_compute_url_map.webapp_lb_url_map.id
   ssl_certificates = [google_compute_managed_ssl_certificate.webapp_ssl_cert.id]
   depends_on = [
@@ -440,11 +438,8 @@ resource "google_compute_target_https_proxy" "webapp_target_proxy" {
 
 resource "google_compute_global_forwarding_rule" "webapp_forwarding_rule" {
   name = var.forwarding_rule_name
-  # region     = var.region 
   ip_protocol           = var.forwarding_rule_ip_protocol
   load_balancing_scheme = var.forwarding_rule_load_balancing_scheme
   port_range            = var.forwarding_rule_port_range
   target                = google_compute_target_https_proxy.webapp_target_proxy.id
-  # network               = google_compute_network.vpc_network.id
-  # network_tier = "STANDARD"
 }
