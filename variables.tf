@@ -483,3 +483,35 @@ variable "forwarding_rule_port_range" {
 variable "firewall_deny_all_http_name" {
   type = string
 }
+
+variable "image_name" {
+  type = string
+}
+
+variable "key_ring_name" {
+  type = string
+}
+
+variable "vm_key_name" {
+  type = string
+}
+
+variable "key_rotation_period" {
+  type = string
+}
+
+variable "sql_key_name" {
+  type = string
+}
+
+variable "bucket_key_name" {
+  type = string
+}
+
+variable "cloudkms_role" {
+  type = string
+}
+
+variable "gcp_sa_api" {
+  type = string
+}
