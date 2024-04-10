@@ -66,7 +66,7 @@ Workspaces allow you to manage different states for your infrastructure, useful 
 ## Enabled Google Cloud Platform (GCP) APIs 🔌
 
 Ensure the following GCP APIs are enabled for your project:
-
+- Cloud Key Management Service (KMS) API
 - Compute Engine API
 - Serverless VPC Access API
 - Cloud Build API
@@ -77,6 +77,7 @@ Ensure the following GCP APIs are enabled for your project:
 - Cloud Pub/Sub API
 - Cloud Run Admin API
 - Cloud DNS API
+
 - Service Networking API
 - BigQuery API
 - BigQuery Migration API

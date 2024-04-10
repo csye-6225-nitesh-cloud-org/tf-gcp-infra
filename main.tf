@@ -77,9 +77,87 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
 } #Issue with destroying VPC NETWORK PEERING https://github.com/hashicorp/terraform-provider-google/issues/16275 Set deletion_policy=ABANDON & clean manually
 
+
 resource "random_id" "db_name_suffix" {
   byte_length = 4
 }
+
+#Key Ring
+resource "random_id" "kr_suffix" {
+  byte_length = 4
+}
+resource "google_kms_key_ring" "keyring" {
+  name     = "${var.key_ring_name}-${random_id.kr_suffix.hex}"
+  location = var.region
+}
+
+resource "google_kms_crypto_key" "instance_key" {
+  name            = var.vm_key_name
+  key_ring        = google_kms_key_ring.keyring.id
+  rotation_period = var.key_rotation_period
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+resource "google_kms_crypto_key" "cloud_sql_key" {
+  name            = var.sql_key_name
+  key_ring        = google_kms_key_ring.keyring.id
+  rotation_period = var.key_rotation_period
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+resource "google_kms_crypto_key" "storage_bucket_key" {
+  name            = var.bucket_key_name
+  key_ring        = google_kms_key_ring.keyring.id
+  rotation_period = var.key_rotation_period
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+# Needed this for Cloud SQL instance with CMEK
+resource "google_project_service_identity" "gcp_sa_cloud_sql" {
+  provider = google-beta
+  project  = var.project_name
+  service  = var.gcp_sa_api
+}
+resource "google_kms_crypto_key_iam_binding" "crypto_key_sql" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.cloud_sql_key.id
+  role          = var.cloudkms_role
+
+  members = [
+    "serviceAccount:${google_project_service_identity.gcp_sa_cloud_sql.email}",
+  ]
+}
+
+# Internal Service Account for Storage bucket
+data "google_storage_project_service_account" "gcs_account" {
+}
+
+resource "google_kms_crypto_key_iam_binding" "storage_key" {
+  crypto_key_id = google_kms_crypto_key.storage_bucket_key.id
+  role          = var.cloudkms_role
+  members       = ["serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"]
+}
+
+data "google_project" "current" {
+
+}
+
+resource "google_kms_crypto_key_iam_binding" "vm_key" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.instance_key.id
+  role          = var.cloudkms_role
+
+  members = [
+    "serviceAccount:service-${data.google_project.current.number}@compute-system.iam.gserviceaccount.com",
+  ]
+}
+
 resource "google_sql_database_instance" "webapp_db" {
   name                = "${var.sql_instance_name}-${random_id.db_name_suffix.hex}"
   database_version    = var.db_version
@@ -94,8 +172,10 @@ resource "google_sql_database_instance" "webapp_db" {
       private_network = google_compute_network.vpc_network.self_link
     }
   }
+  encryption_key_name = google_kms_crypto_key.cloud_sql_key.id
   depends_on = [
-    google_service_networking_connection.private_vpc_connection
+    google_service_networking_connection.private_vpc_connection,
+    google_kms_crypto_key_iam_binding.crypto_key_sql
   ]
 }
 
@@ -120,10 +200,7 @@ resource "google_service_account" "webapp_service_account" {
   account_id   = var.service_account_id
   display_name = "WebApp Service Account"
 }
-data "google_compute_image" "webapp_image" {
-  family  = "${var.Env}-${var.image-family}"
-  project = var.project_name
-}
+
 resource "google_project_iam_binding" "logging_admin" {
   project = var.project_name
   role    = var.logging_role
@@ -226,8 +303,12 @@ resource "google_pubsub_subscription" "verify_email_subscription" {
 }
 resource "google_storage_bucket" "function_source_bucket" {
   name          = "${random_id.bucket_prefix.hex}-cloud-functions"
-  location      = var.storage_bucket_location
+  location      = var.region
   force_destroy = var.storage_bucket_force_destroy
+  encryption {
+    default_kms_key_name = google_kms_crypto_key.storage_bucket_key.id
+  }
+  depends_on = [google_kms_crypto_key_iam_binding.storage_key]
 }
 
 resource "google_storage_bucket_object" "function_source" {
@@ -311,11 +392,14 @@ resource "google_compute_region_instance_template" "instance_template" {
   tags         = var.tags
 
   disk {
-    source_image = data.google_compute_image.webapp_image.self_link
+    source_image = var.image_name
     auto_delete  = true
     boot         = true
     disk_type    = var.disk_type
     disk_size_gb = var.disk-size
+    disk_encryption_key {
+      kms_key_self_link = google_kms_crypto_key.instance_key.id
+    }
   }
 
   network_interface {
@@ -339,6 +423,7 @@ resource "google_compute_region_instance_template" "instance_template" {
     email  = google_service_account.webapp_service_account.email
     scopes = var.service_account_scopes
   }
+  depends_on = [google_kms_crypto_key_iam_binding.vm_key]
 }
 
 # health check
@@ -423,12 +508,12 @@ resource "google_compute_backend_service" "lb_backend" {
   }
 }
 resource "google_compute_url_map" "webapp_lb_url_map" {
-  name = var.url_map_name
+  name            = var.url_map_name
   default_service = google_compute_backend_service.lb_backend.id
 }
 
 resource "google_compute_target_https_proxy" "webapp_target_proxy" {
-  name = var.target_https_proxy_name
+  name             = var.target_https_proxy_name
   url_map          = google_compute_url_map.webapp_lb_url_map.id
   ssl_certificates = [google_compute_managed_ssl_certificate.webapp_ssl_cert.id]
   depends_on = [
@@ -437,7 +522,7 @@ resource "google_compute_target_https_proxy" "webapp_target_proxy" {
 }
 
 resource "google_compute_global_forwarding_rule" "webapp_forwarding_rule" {
-  name = var.forwarding_rule_name
+  name                  = var.forwarding_rule_name
   ip_protocol           = var.forwarding_rule_ip_protocol
   load_balancing_scheme = var.forwarding_rule_load_balancing_scheme
   port_range            = var.forwarding_rule_port_range
